@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,7 +10,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +33,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isLoading = true;
 
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polyline = {};
+
+  List<LatLng> latlng = [
+    const LatLng(23.904023, 90.248244),
+    const LatLng(23.848550, 90.257135),
+  ];
+
   @override
   void initState() {
     super.initState();
     getLocation();
+
+    for (int i = 0; i < latlng.length; i++) {
+      _markers.add(Marker(
+        markerId: MarkerId(i.toString()),
+        position: latlng[i],
+        infoWindow: const InfoWindow(
+          title: 'Charigram',
+        ),
+        icon: BitmapDescriptor.defaultMarker,
+      ));
+      setState(() {});
+      _polyline.add(
+        Polyline(polylineId: const PolylineId('1'), points: latlng),
+      );
+    }
   }
 
   getLocation() async {
@@ -58,20 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // void listenToMyLocation() {
-  //   LocationSettings locationSettings = const LocationSettings(
-  //     accuracy: LocationAccuracy.high,
-  //     distanceFilter: 100,
-  //   );
-  //   StreamSubscription<Position> positionStream =
-  //       Geolocator.getPositionStream(locationSettings: locationSettings)
-  //           .listen((Position? position) {
-  //     getLocation().lat = position!.longitude.toString();
-  //     getLocation().long = position.latitude.toString();
-  //   });
-  // }
-  //
-
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -80,65 +87,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-        title: const Text('Real-Time Location Tracker ')
-    ,
-    )
-    ,
-    body
-    :
-    _isLoading
-    ? const Center(
-    child: CircularProgressIndicator(),
-    )
-        : GoogleMap(
-    myLocationEnabled: true,
-    myLocationButtonEnabled: true,
-    zoomControlsEnabled: true,
-    zoomGesturesEnabled: true,
-    onMapCreated: _onMapCreated,
-    initialCameraPosition: CameraPosition(
-    target: _currentPosition!,
-    zoom: 15,
-    ),
-    markers: <Marker>{
-      Marker(
-          markerId: MarkerId('my-location-marker'),
-          position: _currentPosition!,
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueBlue),
-          infoWindow: InfoWindow(title: 'Charigram'),
-          draggable: false,
-          // draggable: true,
-
-
-          onDragStart: (LatLng latLng) {
-
-          },
-          onDragEnd: (LatLng latLng) {
-
-          }),
-      Marker(
-          markerId: const MarkerId('marker-1'),
-          position: const LatLng(24.109068980277137, 89.97399630377993),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueBlue),
-          infoWindow: InfoWindow(title: '$LatLng'),
-          draggable: false,
-          // draggable: true,
-
-
-          onDragStart: (LatLng latLng) {
-
-          },
-          onDragEnd: (LatLng latLng) {
-
-          }),
-        },
-
-       ),
-
+      appBar: AppBar(
+        title: const Text('Real-Time Location Tracker '),
+      ),
+      body: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : GoogleMap(
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
+        zoomControlsEnabled: true,
+        zoomGesturesEnabled: true,
+        onMapCreated: _onMapCreated,
+        initialCameraPosition: CameraPosition(
+          target: _currentPosition!,
+          zoom: 15,
+        ),
+        markers: _markers,
+        polylines: _polyline,
+      ),
     );
   }
-
 }
